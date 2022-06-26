@@ -1,50 +1,180 @@
 <script setup lang="ts">
-const name = $ref('')
 
-const router = useRouter()
-const go = () => {
-  if (name)
-    router.push(`/hi/${encodeURIComponent(name)}`)
+interface BlockState {
+  x: number
+  y: number
+  revealed: boolean
+  mine?: boolean
+  flagged?: boolean
+  adjacentMines: number
+}
+
+const WIDTH = 5
+const HEIGHT = 5
+const state = ref(
+  Array.from({ length: HEIGHT }, (_, y) =>
+    Array.from({ length: WIDTH },
+      (_, x): BlockState => ({
+        x, y, revealed: false, adjacentMines: 0,
+      }),
+    ),
+  ),
+)
+
+function generateMines(initial: BlockState) {
+  for (const row of state.value) {
+    for (const block of row) {
+      if (Math.abs(initial.x - block.x) < 1)
+        continue
+      if (Math.abs(initial.y - block.y) < 1)
+        continue
+      block.mine = Math.random() < 0.3
+    }
+  }
+}
+
+const directions = [
+  [1, 1],
+  [1, 0],
+  [1, -1],
+  [0, -1],
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, 1],
+]
+function updateNumbers() {
+  state.value.forEach((raw, y) => {
+    raw.forEach((block, x) => {
+      if (block.mine)
+        return
+      getSiblings(block)
+        .forEach((b) => {
+          if (b.mine)
+            block.adjacentMines += 1
+        })
+    })
+  })
+}
+
+const numberColors = [
+  'text-transparent',
+  'text-blue-500',
+  'text-green-500',
+  'text-yellow-500',
+  'text-orange-500',
+  'text-red-500',
+  'text-purple-500',
+  'text-pink-500',
+]
+
+function getBlockClass(block: BlockState) {
+  if (block.flagged)
+    return 'bg-gray-500/10'
+  if (!block.revealed)
+    return 'bg-gray-500/10 hover:bg-gray/10'
+
+  return block.mine ? 'bg-red-500/50' : numberColors[block.adjacentMines]
+}
+
+function expandZero(block: BlockState) {
+  if (block.adjacentMines)
+    return
+  getSiblings(block).forEach((s) => {
+    if (!s.revealed) {
+      s.revealed = true
+      expandZero(s)
+    }
+  })
+}
+
+let mineGenerated = false
+const dev = true
+
+function onRightClick(block: BlockState) {
+  if (block.revealed)
+    return
+  block.flagged = !block.flagged
+}
+
+function onClick(block: BlockState) {
+  if (!mineGenerated) {
+    generateMines(block)
+    updateNumbers()
+    mineGenerated = true
+  }
+  block.revealed = true
+  if (block.mine)
+    alert('BOOOOOM!')
+  expandZero(block)
+}
+
+function getSiblings(block: BlockState) {
+  return directions.map(([dx, dy]) => {
+    const x2 = block.x + dx
+    const y2 = block.y + dy
+    if (x2 < 0 || x2 >= WIDTH || y2 < 0 || y2 >= HEIGHT)
+      return undefined
+
+    return state.value[y2][x2]
+  })
+    .filter(Boolean) as BlockState []
+}
+
+watchEffect(checkGameState, {
+  onTrigger(e) {
+    console.log('e----->', e)
+  },
+})
+
+function checkGameState() {
+  if (!mineGenerated)
+    return
+  const blocks = state.value.flat()
+
+  if (blocks.every(block => block.revealed || block.flagged)) {
+    if (blocks.some(block => block.flagged && !block.mine))
+      alert('You Cheat!')
+    else
+      alert('You Win!')
+  }
 }
 </script>
 
 <template>
   <div>
-    <div i-carbon-campsite text-4xl inline-block />
-    <p>
-      <a rel="noreferrer" href="https://github.com/antfu/vitesse-lite" target="_blank">
-        Vitesse Lite
-      </a>
-    </p>
-    <p>
-      <em text-sm op75>Opinionated Vite Starter Template</em>
-    </p>
-
-    <div py-4 />
-
-    <input
-      id="input"
-      v-model="name"
-      placeholder="What's your name?"
-      type="text"
-      autocomplete="false"
-      p="x-4 y-2"
-      w="250px"
-      text="center"
-      bg="transparent"
-      border="~ rounded gray-200 dark:gray-700"
-      outline="none active:none"
-      @keydown.enter="go"
-    >
-
-    <div>
-      <button
-        class="m-3 text-sm btn"
-        :disabled="!name"
-        @click="go"
+    Minesweeper
+    <div p5>
+      <div
+        v-for="row, y in state"
+        :key="y"
+        flex="~ gap-0.5"
+        items-center justify-center
       >
-        Go
-      </button>
+        <button
+          v-for="block, x in row"
+          :key="x"
+          flex="~"
+          items-center justify-center
+          w-10 h-10
+          border="1 gray-400/10"
+          :class="getBlockClass(block)"
+          @click="onClick(block)"
+          @contextmenu.prevent="onRightClick(block)"
+        >
+          <template v-if="block.flagged">
+            <div i-mdi:flag text-red />
+          </template>
+          <template v-else-if="block.revealed || dev">
+            <div v-if="block.mine" i-mdi:mine>
+              x
+            </div>
+            <div v-else>
+              {{ block.adjacentMines }}
+            </div>
+          </template>
+        </button>
+      </div>
     </div>
   </div>
 </template>
