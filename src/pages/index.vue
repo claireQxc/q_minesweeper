@@ -11,6 +11,7 @@ interface BlockState {
 
 const WIDTH = 5
 const HEIGHT = 5
+let GAME_OVER = false
 const state = ref(
   Array.from({ length: HEIGHT }, (_, y) =>
     Array.from({ length: WIDTH },
@@ -89,24 +90,30 @@ function expandZero(block: BlockState) {
 }
 
 let mineGenerated = false
-const dev = true
+const dev = false
 
 function onRightClick(block: BlockState) {
-  if (block.revealed)
+  if (GAME_OVER || block.revealed)
     return
   block.flagged = !block.flagged
+  checkGameState()
 }
 
 function onClick(block: BlockState) {
+  if (GAME_OVER)
+    return
   if (!mineGenerated) {
     generateMines(block)
     updateNumbers()
     mineGenerated = true
   }
   block.revealed = true
-  if (block.mine)
+  if (block.mine) {
+    GAME_OVER = true
     alert('BOOOOOM!')
+  }
   expandZero(block)
+  checkGameState()
 }
 
 function getSiblings(block: BlockState) {
@@ -121,22 +128,19 @@ function getSiblings(block: BlockState) {
     .filter(Boolean) as BlockState []
 }
 
-watchEffect(checkGameState, {
-  onTrigger(e) {
-    console.log('e----->', e)
-  },
-})
-
 function checkGameState() {
-  if (!mineGenerated)
+  if (!mineGenerated || GAME_OVER)
     return
   const blocks = state.value.flat()
-
   if (blocks.every(block => block.revealed || block.flagged)) {
-    if (blocks.some(block => block.flagged && !block.mine))
+    if (blocks.some(block => block.flagged && !block.mine)) {
+      GAME_OVER = true
       alert('You Cheat!')
-    else
+    }
+    else {
       alert('You Win!')
+      GAME_OVER = true
+    }
   }
 }
 </script>
@@ -148,7 +152,7 @@ function checkGameState() {
       <div
         v-for="row, y in state"
         :key="y"
-        flex="~ gap-0.5"
+        flex="~"
         items-center justify-center
       >
         <button
@@ -156,7 +160,7 @@ function checkGameState() {
           :key="x"
           flex="~"
           items-center justify-center
-          w-10 h-10
+          w-10 h-10 m="0.5"
           border="1 gray-400/10"
           :class="getBlockClass(block)"
           @click="onClick(block)"
