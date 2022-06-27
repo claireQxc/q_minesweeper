@@ -155,29 +155,10 @@ function checkGameState() {
         flex="~"
         items-center justify-center
       >
-        <button
+        <mine-block
           v-for="block, x in row"
           :key="x"
-          flex="~"
-          items-center justify-center
-          w-10 h-10 m="0.5"
-          border="1 gray-400/10"
-          :class="getBlockClass(block)"
-          @click="onClick(block)"
-          @contextmenu.prevent="onRightClick(block)"
-        >
-          <template v-if="block.flagged">
-            <div i-mdi:flag text-red />
-          </template>
-          <template v-else-if="block.revealed || dev">
-            <div v-if="block.mine" i-mdi:mine>
-              x
-            </div>
-            <div v-else>
-              {{ block.adjacentMines }}
-            </div>
-          </template>
-        </button>
+        />
       </div>
     </div>
   </div>
