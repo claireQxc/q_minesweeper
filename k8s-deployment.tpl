@@ -44,3 +44,23 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sweeper-ingress
+  namespace: {K8S_NAMESPACE}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: www.i-qxc.com
+    http:
+      paths:
+      - path: "/sweeper/"
+        pathType: Prefix
+        backend:
+          service:
+            name: sweeper-service
+            port:
+              number: 80
