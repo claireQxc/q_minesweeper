@@ -34,7 +34,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: www-service
+  name: sweeper-service
   namespace: {K8S_NAMESPACE}
 spec:
   type: LoadBalancer
