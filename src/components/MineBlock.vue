@@ -39,7 +39,7 @@ function getBlockClass(block: BlockState) {
     w-10 h-10 m="1px"
     border="0.5 gray-400/10"
     :class="getBlockClass(block)"
-    @click="whichButton(block)"
+    @mousedown="whichButton"
   >
     <template v-if="block.flagged">
       <div i-mdi:flag text-red />

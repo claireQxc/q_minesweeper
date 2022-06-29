@@ -53,7 +53,7 @@ watchEffect(() => {
       </button>
     </div>
 
-    <div flex="~ fap-10" justify-center>
+    <div flex="~ gap-10" justify-center>
       <div font-mono text-2xl flex="~ gap-1" items-center>
         <div i-carbon-timer />
         {{ timerMS }}
