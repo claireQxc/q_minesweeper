@@ -55,7 +55,7 @@ watchEffect(() => {
         <div i-carbon-timer />
         {{ timerMS }}
       </div>
-      <div font-mono text-2xl flex="~ gap-1" items-center hover="bg-white-500/20" @click="play.reset()">
+      <div font-mono text-2xl flex="~ gap-1" items-center hover="bg-gray-500/30" @click="play.reset()">
         <div i-bi-emoji-smile />
       </div>
       <div font-mono text-2xl flex="~ gap-1" items-center>
