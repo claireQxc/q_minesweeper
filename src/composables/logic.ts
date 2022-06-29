@@ -132,7 +132,7 @@ export class GamePlay {
     if (this.state.value.status === 'ready') {
       this.state.value.status = 'play'
       this.state.value.startMS = +new Date()
-      return
+      // return
     }
 
     if (this.state.value.status !== 'play' || block.flagged)
@@ -142,7 +142,6 @@ export class GamePlay {
       this.generateMines(this.board, block)
       this.state.value.mineGenerated = true
     }
-
     block.revealed = true
     if (block.mine)
       this.onGameOver('lost')
@@ -182,7 +181,6 @@ export class GamePlay {
 
     const siblings = this.getSiblings(block)
     const flags = siblings.reduce((a, b) => a + (b.flagged ? 1 : 0), 0)
-    const notRevealed = siblings.reduce((a, b) => a + (!b.revealed && !b.flagged ? 1 : 0), 0)
     if (flags === block.adjacentMines) {
       siblings.forEach((i) => {
         if (i.revealed || i.flagged)
@@ -191,13 +189,6 @@ export class GamePlay {
         this.expandZero(i)
         if (i.mine)
           this.onGameOver('lost')
-      })
-    }
-    const missingFlags = block.adjacentMines - flags
-    if (notRevealed === missingFlags) {
-      siblings.forEach((i) => {
-        if (!i.revealed && !i.flagged)
-          i.flagged = true
       })
     }
   }
