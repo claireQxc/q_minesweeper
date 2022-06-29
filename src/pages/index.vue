@@ -39,9 +39,6 @@ watchEffect(() => {
     Minesweeper
 
     <div flex="~ gap1" justify-center p4>
-      <button btn @click="play.reset">
-        New Game
-      </button>
       <button btn @click="newGame('easy')">
         Easy
       </button>
@@ -57,6 +54,9 @@ watchEffect(() => {
       <div font-mono text-2xl flex="~ gap-1" items-center>
         <div i-carbon-timer />
         {{ timerMS }}
+      </div>
+      <div font-mono text-2xl flex="~ gap-1" items-center hover="bg-white-500/20" @click="play.reset()">
+        <div i-bi-emoji-smile />
       </div>
       <div font-mono text-2xl flex="~ gap-1" items-center>
         <div i-mdi-mine />
